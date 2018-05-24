@@ -1,0 +1,4 @@
+void() test{
+	int i = 0
+	exit(1)
+}

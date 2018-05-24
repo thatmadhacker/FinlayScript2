@@ -6,6 +6,7 @@ void() main{
 	int neat = 5+10+6^2
 	int h = 0
 	h = 8
+	boolean b = false
 	test()
 	neat = neat + h
 	cool = cool+" "+test
@@ -20,11 +21,15 @@ void() test{
 	String test1234 = test1234()
 	int test12345 = test1234
 	String testing = test12345
+	int testing1 = integer()
 	test2.test()
 }
 String() test123{
 	return(test)
 }
 String() test1234{
+	return(1)
+}
+int() integer{
 	return(1)
 }

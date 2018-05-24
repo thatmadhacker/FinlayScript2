@@ -87,7 +87,7 @@ public class FinlayScript {
 			return -1;
 		}
 		boolean found = true;
-		if(s.startsWith("write")){
+		if(s.startsWith("write(")){
 			found = false;
 			if(p.hasPermission(Permission.IO.toString())){
 				s = s.substring(6,s.lastIndexOf(")"));

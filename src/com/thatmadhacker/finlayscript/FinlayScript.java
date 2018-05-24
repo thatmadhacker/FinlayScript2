@@ -1,6 +1,8 @@
 package com.thatmadhacker.finlayscript;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -61,7 +63,7 @@ public class FinlayScript {
 			} else if (s.startsWith("<permission>")) {
 				s = s.substring(12);
 				s = s.trim();
-				Permission permission = Permission.valueOf(s.trim());
+				Permission permission = Permission.valueOf(s.trim().toUpperCase());
 				System.out.println("A script is requesting " + permission.toString() + " permissions, accept? Y/N");
 				if (scan.nextLine().equalsIgnoreCase("y")) {
 					p.permissions.add(permission);
@@ -85,6 +87,20 @@ public class FinlayScript {
 			return -1;
 		}
 		boolean found = true;
+		if(s.startsWith("write")){
+			found = false;
+			if(p.hasPermission(Permission.IO.toString())){
+				s = s.substring(6,s.lastIndexOf(")"));
+				String path = s.split(",")[0].replaceAll("\"", "").trim();
+				String data = s.split(",")[1].replaceAll("\"", "").trim();
+				File f = new File(path);
+				f.delete();
+				f.createNewFile();
+				PrintWriter out = new PrintWriter(new FileWriter(f));
+				out.print(data);
+				out.close();
+			}
+		}
 		for (String str : p.variables.keySet()) {
 			if (s.split(" ")[0].equals(str)) {
 				if (p.types.get(str) == VariableType.STRING) {

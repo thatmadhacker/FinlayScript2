@@ -1,4 +1,5 @@
 <import> "test2.fscript" as test2
+<permission> io
 void() main{
 	String test1 = "hello"
 	String test2 = "test1"
@@ -6,7 +7,6 @@ void() main{
 	int neat = 5+10+6^2
 	int h = 0
 	h = 8
-	boolean b = false
 	test()
 	neat = neat + h
 	cool = cool+" "+test
@@ -22,6 +22,8 @@ void() test{
 	int test12345 = test1234
 	String testing = test12345
 	int testing1 = integer()
+	boolean b = false
+	write("test.txt","test123")
 	test2.test()
 }
 String() test123{

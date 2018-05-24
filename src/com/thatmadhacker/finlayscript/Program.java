@@ -75,4 +75,12 @@ public class Program {
 			this.exitCode = exitCode;
 		}
 	}
+	public boolean hasPermission(String p){
+		for(Permission perm : permissions){
+			if(perm.toString().equals(p)){
+				return true;
+			}
+		}
+		return false;
+	}
 }

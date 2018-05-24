@@ -13,8 +13,7 @@ public class Program {
 	public List<String> lines;
 	public int exitCode = 0;
 	public String returnValue = "";
-	public Program(List<String> lines){
-		this.lines = lines;
+	public Program(){
 		variables = new HashMap<String,String>();
 		types = new HashMap<String,VariableType>();
 		classes = new HashMap<String,Program>();

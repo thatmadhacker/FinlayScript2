@@ -6,7 +6,19 @@ import java.util.List;
 import java.util.Scanner;
 
 public class FinlayScript {
-	public static Program interpret(File f, File topDir) throws Exception {
+	public static void interpretASync(Program p, File f, File topDir){
+		new Thread(new Runnable(){
+			@Override
+			public void run() {
+				try {
+					interpret(p,f,topDir);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+	}
+	public static void interpret(Program p, File f, File topDir) throws Exception {
 		int exitCode = -1;
 		Scanner in = new Scanner(f);
 		List<String> lines = new ArrayList<String>();
@@ -14,7 +26,7 @@ public class FinlayScript {
 			lines.add(in.nextLine());
 		}
 		in.close();
-		Program p = new Program(lines);
+		p.lines = lines;
 		for (int i = 0; i < lines.size(); i++) {
 			String s = lines.get(i);
 			if (s.startsWith("String()")) {
@@ -36,7 +48,9 @@ public class FinlayScript {
 				s = s.substring(5);
 				String as = s;
 				File file = new File(topDir.getPath() + "/" + name);
-				p.classes.put(as, interpret(file, topDir));
+				Program p1 = new Program();
+				interpret(p1, file, topDir);
+				p.classes.put(as, p1);
 			}
 		}
 		if (p.methods.containsKey("main")) {
@@ -60,7 +74,6 @@ public class FinlayScript {
 		if (exitCode != -1) {
 			p.exitCode = exitCode;
 		}
-		return p;
 	}
 
 	public static int decodeLine(String s, Program p, File topDir, int i) throws Exception {
@@ -323,7 +336,8 @@ public class FinlayScript {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Program p = interpret(new File("scripts/test.fscript"), new File("scripts/"));
+		Program p = new Program();
+		interpret(p,new File("scripts/test.fscript"), new File("scripts/"));
 		System.out.println("Exit code: " + p.exitCode);
 		System.out.println();
 		for (String s : p.variables.keySet()) {

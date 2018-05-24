@@ -18,8 +18,9 @@ public class FinlayScript {
 			}
 		}).start();
 	}
+	@SuppressWarnings({"resource" })
 	public static void interpret(Program p, File f, File topDir) throws Exception {
-		int exitCode = -1;
+		Scanner scan = new Scanner(System.in);
 		Scanner in = new Scanner(f);
 		List<String> lines = new ArrayList<String>();
 		while (in.hasNextLine()) {
@@ -27,6 +28,7 @@ public class FinlayScript {
 		}
 		in.close();
 		p.lines = lines;
+		p.topDir = topDir;
 		for (int i = 0; i < lines.size(); i++) {
 			String s = lines.get(i);
 			if (s.startsWith("String()")) {
@@ -51,29 +53,19 @@ public class FinlayScript {
 				Program p1 = new Program();
 				interpret(p1, file, topDir);
 				p.classes.put(as, p1);
-			}
-		}
-		if (p.methods.containsKey("main")) {
-			for (int i = p.methods.get("main"); i < p.lines.size(); i++) {
-				String line = p.lines.get(i);
-				if (line.startsWith("}")) {
-					i = p.lines.size() + 1;
+			}else if(s.startsWith("<permission>")){
+				s = s.substring(12);
+				s = s.trim();
+				Permission permission = Permission.valueOf(s.trim());
+				System.out.println("A script is requesting "+permission.toString()+" permissions, accept? Y/N");
+				if(scan.nextLine().equalsIgnoreCase("y")){
+					p.permissions.add(permission);
+				}else{
 					continue;
 				}
-				try {
-					int code = decodeLine(line, p, topDir, i);
-					if (code != -1) {
-						code = exitCode;
-						break;
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
 			}
 		}
-		if (exitCode != -1) {
-			p.exitCode = exitCode;
-		}
+		
 	}
 
 	public static int decodeLine(String s, Program p, File topDir, int i) throws Exception {

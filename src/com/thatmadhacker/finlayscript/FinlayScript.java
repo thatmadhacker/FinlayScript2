@@ -37,19 +37,19 @@ public class FinlayScript {
 			if (s.startsWith("String()")) {
 				s = s.substring(8).trim();
 				p.methods.put(s.substring(0, s.lastIndexOf("{")).trim(), i);
-				p.methodTypes.put(s.substring(0, s.lastIndexOf("{")).trim(), VariableType.STRING);
+				p.methodTypes.put(s.substring(0, s.lastIndexOf("{")).trim(), "STRING");
 			} else if (s.startsWith("int()")) {
 				s = s.substring(5).trim();
 				p.methods.put(s.substring(0, s.lastIndexOf("{")).trim(), i);
-				p.methodTypes.put(s.substring(0, s.lastIndexOf("{")).trim(), VariableType.INTEGER);
+				p.methodTypes.put(s.substring(0, s.lastIndexOf("{")).trim(), "INTEGER");
 			} else if (s.startsWith("void()")) {
 				s = s.substring(6).trim();
 				p.methods.put(s.substring(0, s.lastIndexOf("{")).trim(), i);
-				p.methodTypes.put(s.substring(0, s.lastIndexOf("{")).trim(), VariableType.VOID);
+				p.methodTypes.put(s.substring(0, s.lastIndexOf("{")).trim(), "VOID");
 			} else if (s.startsWith("boolean()")) {
 				s = s.substring(9).trim();
 				p.methods.put(s.substring(0, s.lastIndexOf("{")).trim(), i);
-				p.methodTypes.put(s.substring(0, s.lastIndexOf("{")).trim(), VariableType.BOOLEAN);
+				p.methodTypes.put(s.substring(0, s.lastIndexOf("{")).trim(), "BOOLEAN");
 			} else if (s.startsWith("<import>")) {
 				s = s.substring(8);
 				String name = s.substring(2, s.lastIndexOf("\""));
@@ -57,13 +57,13 @@ public class FinlayScript {
 				s = s.substring(5);
 				String as = s;
 				File file = new File(topDir.getPath() + "/" + name);
-				Program p1 = new Program();
+				Program p1 = new Program(p.env);
 				interpret(p1, file, topDir);
 				p.classes.put(as, p1);
 			} else if (s.startsWith("<permission>")) {
 				s = s.substring(12);
 				s = s.trim();
-				Permission permission = Permission.valueOf(s.trim().toUpperCase());
+				String permission = s.trim().toUpperCase();
 				System.out.println("A script is requesting " + permission.toString() + " permissions, accept? Y/N");
 				if (scan.nextLine().equalsIgnoreCase("y")) {
 					p.permissions.add(permission);
@@ -76,6 +76,7 @@ public class FinlayScript {
 
 	public static int decodeLine(String s, Program p, File topDir, int i) throws Exception {
 		s = s.trim();
+		String orig = s;
 		p.returnValue = "";
 		if (s.startsWith("//") || s.startsWith(";")) {
 			return -1;
@@ -89,7 +90,7 @@ public class FinlayScript {
 		boolean found = true;
 		if(s.startsWith("write(")){
 			found = false;
-			if(p.hasPermission(Permission.IO.toString())){
+			if(p.hasPermission("IO")){
 				s = s.substring(6,s.lastIndexOf(")"));
 				String path = s.split(",")[0].replaceAll("\"", "").trim();
 				String data = s.split(",")[1].replaceAll("\"", "").trim();
@@ -103,7 +104,7 @@ public class FinlayScript {
 		}
 		for (String str : p.variables.keySet()) {
 			if (s.split(" ")[0].equals(str)) {
-				if (p.types.get(str) == VariableType.STRING) {
+				if (p.types.get(str) == "STRING") {
 					String data = s.substring(str.length()).split("=")[1] + " ";
 					String string = "";
 					for (String stri : data.split("\\+")) {
@@ -164,6 +165,11 @@ public class FinlayScript {
 								}
 							}
 						}
+						for (String strinn : p.env.methods.keySet()) {
+							if (stri.equals(strinn + "()")) {
+								p.env.methods.get(strinn).onMethod(strinn, orig);
+							}
+						}
 						for (String strin : p.variables.keySet()) {
 							if (strin.equals(stri)) {
 								if (!found) {
@@ -172,11 +178,19 @@ public class FinlayScript {
 								}
 							}
 						}
+						for (String strin : p.env.variables.keySet()) {
+							if (strin.equals(stri)) {
+								if (!found) {
+									stri = p.env.variables.get(strin);
+									found = false;
+								}
+							}
+						}
 						string += stri;
 					}
 					string = string.replaceAll("\"", "");
 					p.variables.put(str, string);
-				} else if (p.types.get(str) == VariableType.BOOLEAN) {
+				} else if (p.types.get(str) == "BOOLEAN") {
 					String stri = s.substring(str.length()).split("=")[1] + " ";
 					;
 					boolean found1 = false;
@@ -235,6 +249,11 @@ public class FinlayScript {
 							}
 						}
 					}
+					for (String strinn : p.env.methods.keySet()) {
+						if (stri.equals(strinn + "()")) {
+							p.env.methods.get(strinn).onMethod(strinn, orig);
+						}
+					}
 					for (String strin : p.variables.keySet()) {
 						if (strin.equals(stri)) {
 							if (!found) {
@@ -243,8 +262,16 @@ public class FinlayScript {
 							}
 						}
 					}
+					for (String strin : p.env.variables.keySet()) {
+						if (strin.equals(stri)) {
+							if (!found) {
+								stri = p.env.variables.get(strin);
+								found = false;
+							}
+						}
+					}
 					p.variables.put(str, stri);
-				} else if (p.types.get(str) == VariableType.INTEGER) {
+				} else if (p.types.get(str) == "INTEGER") {
 					String data = s.substring(str.length()).split("=")[1] + " ";
 					int value = parseEquasion(data.trim(), p);
 					p.variables.put(str, String.valueOf(value));
@@ -398,7 +425,7 @@ public class FinlayScript {
 			}
 			string = string.replaceAll("\"", "");
 			p.variables.put(varName, string);
-			p.types.put(varName, VariableType.STRING);
+			p.types.put(varName, "STRING");
 		} else if (s.startsWith("boolean") && !s.startsWith("boolean()")) {
 			s = s.substring(7).trim();
 			String str = s.split(" ")[0];
@@ -471,14 +498,14 @@ public class FinlayScript {
 				stri = "false";
 			}
 			p.variables.put(str, stri);
-			p.types.put(str, VariableType.BOOLEAN);
+			p.types.put(str, "BOOLEAN");
 		} else if (s.startsWith("int") && !s.startsWith("int()")) {
 			s = s.substring(3);
 			String varName = s.split(" ")[1];
 			String data = s.substring(varName.length()).split("=")[1] + " ";
 			int value = parseEquasion(data.trim(), p);
 			p.variables.put(varName, String.valueOf(value));
-			p.types.put(varName, VariableType.INTEGER);
+			p.types.put(varName, "INTEGER");
 		}
 		return -1;
 	}
@@ -621,7 +648,7 @@ public class FinlayScript {
 						x = Math.cos(Math.toRadians(x));
 					else if (func.equals("tan"))
 						x = Math.tan(Math.toRadians(x));
-					else
+					else 
 						throw new RuntimeException("Unknown function: " + func);
 				} else {
 					throw new RuntimeException("Unexpected: " + (char) ch);

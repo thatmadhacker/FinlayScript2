@@ -8,23 +8,35 @@ import java.util.Map;
 
 public class Program {
 	public Map<String,String> variables;
-	public Map<String, VariableType> types;
+	public Map<String, String> types;
 	public Map<String,Program> classes;
 	public Map<String,Integer> methods;
-	public Map<String,VariableType> methodTypes;
-	public List<Permission> permissions;
+	public Map<String,String> methodTypes;
+	public List<String> permissions;
 	public File topDir;
 	public List<String> lines;
 	public int exitCode = 0;
 	public String returnValue = "";
-	public Program(){
+	public Environment env;
+	public Program(Environment env){
+		this.env = env;
 		lines = new ArrayList<String>();
-		permissions = new ArrayList<Permission>();
+		permissions = new ArrayList<String>();
 		variables = new HashMap<String,String>();
-		types = new HashMap<String,VariableType>();
+		types = new HashMap<String,String>();
 		classes = new HashMap<String,Program>();
 		methods = new HashMap<String,Integer>();
-		methodTypes = new HashMap<String,VariableType>();
+		methodTypes = new HashMap<String,String>();
+	}
+	public Program(){
+		this.env = new Environment();
+		lines = new ArrayList<String>();
+		permissions = new ArrayList<String>();
+		variables = new HashMap<String,String>();
+		types = new HashMap<String,String>();
+		classes = new HashMap<String,Program>();
+		methods = new HashMap<String,Integer>();
+		methodTypes = new HashMap<String,String>();
 	}
 	
 	public void exec(){
@@ -52,7 +64,7 @@ public class Program {
 		}
 	}
 	public void execMethod(String method){
-		int exitCode = -1;
+		int exitCode = -1; 
 		if (methods.containsKey(method)) {
 			for (int i = methods.get(method); i < lines.size(); i++) {
 				String line = lines.get(i);
@@ -76,8 +88,8 @@ public class Program {
 		}
 	}
 	public boolean hasPermission(String p){
-		for(Permission perm : permissions){
-			if(perm.toString().equals(p)){
+		for(String perm : permissions){
+			if(perm.equals(p)){
 				return true;
 			}
 		}

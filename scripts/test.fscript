@@ -1,5 +1,5 @@
 <import> "test2.fscript" as test2
-<permission> io
+<permission> IO*
 void() main{
 	String test1 = "hello"
 	String test2 = "test1"
@@ -23,8 +23,22 @@ void() test{
 	String testing = test12345
 	int testing1 = integer()
 	boolean b = false
-	write("test.txt","test123")
+	delete("test.txt")
+	create("test.txt")
+	write("test.txt","test123",true)
+	test12345()
+	if(i1,0,test123456())
+	int j = 0
+	list<String> listTest
+	listTest.add(hh31)
+	listTest.add(test)
+	int l = listTest.size()
+	for(String string7 : listTest : list)
+	while(i1,1,hello1234())
 	test2.test()
+}
+void() list{
+	println(string7)
 }
 String() test123{
 	return(test)
@@ -34,4 +48,21 @@ String() test1234{
 }
 int() integer{
 	return(1)
+}
+void() test12345{
+	int i1 = 0
+}
+void() test123456{
+	i1 = 1
+}
+void() hello1234{
+	j = j + 1
+	if(j,10,setI())
+	print()
+}
+void() print{
+	println(j)
+}
+void() setI{
+	i1 = 0
 }

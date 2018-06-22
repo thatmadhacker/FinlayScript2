@@ -9,9 +9,12 @@ import java.util.Map;
 public class Program {
 	public Map<String,String> variables;
 	public Map<String, String> types;
+	public List<Library> libraries;
 	public Map<String,Program> classes;
 	public Map<String,Integer> methods;
 	public Map<String,String> methodTypes;
+	public Map<String, List<String>> lists;
+	public Map<String,String> listTypes;
 	public List<String> permissions;
 	public File topDir;
 	public List<String> lines;
@@ -20,6 +23,9 @@ public class Program {
 	public Environment env;
 	public Program(Environment env){
 		this.env = env;
+		libraries = new ArrayList<Library>();
+		lists = new HashMap<String,List<String>>();
+		listTypes = new HashMap<String,String>();
 		lines = new ArrayList<String>();
 		permissions = new ArrayList<String>();
 		variables = new HashMap<String,String>();
@@ -30,6 +36,9 @@ public class Program {
 	}
 	public Program(){
 		this.env = new Environment();
+		libraries = new ArrayList<Library>();
+		lists = new HashMap<String,List<String>>();
+		listTypes = new HashMap<String,String>();
 		lines = new ArrayList<String>();
 		permissions = new ArrayList<String>();
 		variables = new HashMap<String,String>();

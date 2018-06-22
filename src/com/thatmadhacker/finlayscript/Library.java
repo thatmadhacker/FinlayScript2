@@ -2,6 +2,7 @@ package com.thatmadhacker.finlayscript;
 
 public interface Library {
 
-	public abstract void onMethod(String name, String line);
-	
+	public abstract boolean onMethod(String name, String line, Program p);
+	public abstract boolean onLine(String line, Program p);
+	public abstract void init(Program p);
 }

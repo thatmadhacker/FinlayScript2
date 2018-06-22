@@ -1,11 +1,11 @@
 package com.thatmadhacker.finlayscript;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
+import com.thatmadhacker.iolib.IOLib;
 
 public class FinlayScript {
 	public static void interpretASync(Program p, File f, File topDir) {
@@ -23,6 +23,9 @@ public class FinlayScript {
 
 	@SuppressWarnings({ "resource" })
 	public static void interpret(Program p, File f, File topDir) throws Exception {
+		for(Library l : p.libraries){
+			l.init(p);
+		}
 		Scanner scan = new Scanner(System.in);
 		Scanner in = new Scanner(f);
 		List<String> lines = new ArrayList<String>();
@@ -87,21 +90,218 @@ public class FinlayScript {
 		if (s.startsWith("boolean()") || s.startsWith("String()") || s.startsWith("int()") || s.startsWith("void()")) {
 			return -1;
 		}
+		s = s.replaceAll("\"", "");
 		boolean found = true;
-		if(s.startsWith("write(")){
-			found = false;
-			if(p.hasPermission("IO")){
-				s = s.substring(6,s.lastIndexOf(")"));
-				String path = s.split(",")[0].replaceAll("\"", "").trim();
-				String data = s.split(",")[1].replaceAll("\"", "").trim();
-				File f = new File(path);
-				f.delete();
-				f.createNewFile();
-				PrintWriter out = new PrintWriter(new FileWriter(f));
-				out.print(data);
-				out.close();
+		for(Library l : p.libraries){
+			if(l.onLine(orig, p)){
+				return -1;
 			}
 		}
+		for (String strinn : p.env.methods.keySet()) {
+			if (s.startsWith(strinn + "(")) {
+				if(p.env.methods.get(strinn).onMethod(strinn, orig, p)){
+					found = false;
+					return -1;
+				}
+			}
+		}
+		for(String l : p.lists.keySet()){
+			if(s.startsWith(l+".add(")){
+				String data = s.substring((l+".add(").length(),s.lastIndexOf(")"));
+				p.lists.get(l).add(data);
+				found = true;
+				return -1;
+			}
+			if(s.startsWith(l+".remove(")){
+				String data = s.substring((l+".remove(").length(),s.lastIndexOf(")"));
+				p.lists.get(l).remove(data);
+				found = true;
+				return -1;
+			}
+		}
+		if(s.startsWith("list<")){
+			String type = s.substring(5, s.lastIndexOf(">"));
+			String name = s.substring(s.lastIndexOf(">")+2);
+			p.lists.put(name, new ArrayList<String>());
+			p.listTypes.put(name, type);
+			found = true;
+			return -1;
+		}
+		if(s.startsWith("for(")){
+			String[] parse = s.substring(4,s.lastIndexOf(")")).split(":");
+			String type = parse[0].split(" ")[0];
+			String name = parse[0].split(" ")[1];
+			String list = parse[1];
+			String method = parse[2];
+			List<String> l = p.lists.get(list.trim());
+			for(String s1 : l){
+				p.variables.put(name, s1);
+				p.types.put(name, type);
+				p.execMethod(method.trim());
+			}
+			p.variables.remove(name);
+			p.types.remove(name);
+			found = true;
+			return -1;
+		}
+		if(s.startsWith("println(")){
+			String message = s.substring(8,s.lastIndexOf(")"));
+			for(String var : p.variables.keySet()){
+				if(var.equals(message)){
+					message = p.variables.get(var);
+				}
+			}
+			System.out.println(message);
+			found = true;
+			return -1;
+		}
+		if (s.startsWith("if(")) {
+			found = false;
+			String[] parse = s.substring(3).trim().split(",");
+			if (parse.length == 2) {
+				String variable = parse[0].trim();
+				String method = parse[1].trim().substring(0, parse[1].lastIndexOf("("));
+				if (p.variables.get(variable).equalsIgnoreCase("TRUE")) {
+					p.execMethod(method);
+				}
+				found = false;
+				return -1;
+			} else {
+				String value1 = parse[0].trim();
+				String value2 = parse[1].trim();
+				boolean b = false;
+				boolean var1 = false;
+				boolean var2 = false;
+				for (String var : p.variables.keySet()) {
+					if (var.equals(value1) && !var1) {
+						value1 = p.variables.get(var);
+						b = true;
+						var1 = true;
+					}
+					if (var.equals(value2) && !var2) {
+						value2 = p.variables.get(var);
+						b = true;
+						var2 = true;
+					}
+				}
+				if (!b) {
+					for (String classs : p.classes.keySet()) {
+						if (value1.startsWith(classs + ".")) {
+							for (String var : p.classes.get(classs).variables.keySet()) {
+								if (value1.equals(classs + "." + var)) {
+									value1 = p.classes.get(classs).variables.get(var);
+								}
+							}
+						}
+						if (value2.startsWith(classs + ".")) {
+							for (String var : p.classes.get(classs).variables.keySet()) {
+								if (value2.equals(classs + "." + var)) {
+									value2 = p.classes.get(classs).variables.get(var);
+								}
+							}
+						}
+					}
+				}
+				String method = parse[2].substring(0, parse[2].lastIndexOf("("));
+				if (value1.equals(value2)) {
+					p.execMethod(method);
+				}
+				found = false;
+				return -1;
+			}
+		}
+		if (s.startsWith("while(")) {
+			found = false;
+			String[] parse = s.substring(6).trim().split(",");
+			if (parse.length == 2) {
+				String variable = parse[0].trim();
+				String method = parse[1].trim().substring(0, parse[1].lastIndexOf("("));
+				
+				while (p.variables.get(variable).equalsIgnoreCase("TRUE")) {
+					p.execMethod(method);
+				}
+				found = false;
+				return -1;
+			} else {
+				String value1 = parse[0].trim();
+				String value2 = parse[1].trim();
+				boolean b = false;
+				boolean var1 = false;
+				boolean var2 = false;
+				for (String var : p.variables.keySet()) {
+					if (var.equals(value1) && !var1) {
+						value1 = p.variables.get(var);
+						b = true;
+						var1 = true;
+					}
+					if (var.equals(value2) && !var2) {
+						value2 = p.variables.get(var);
+						b = true;
+						var2 = true;
+					}
+				}
+				if (!b) {
+					for (String classs : p.classes.keySet()) {
+						if (value1.startsWith(classs + ".")) {
+							for (String var : p.classes.get(classs).variables.keySet()) {
+								if (value1.equals(classs + "." + var)) {
+									value1 = p.classes.get(classs).variables.get(var);
+								}
+							}
+						}
+						if (value2.startsWith(classs + ".")) {
+							for (String var : p.classes.get(classs).variables.keySet()) {
+								if (value2.equals(classs + "." + var)) {
+									value2 = p.classes.get(classs).variables.get(var);
+								}
+							}
+						}
+					}
+				}
+				String method = parse[2].substring(0, parse[2].lastIndexOf("("));
+				while (value1.equals(value2)) {
+					p.execMethod(method);
+					value1 = parse[0].trim();
+					value2 = parse[1].trim();
+					boolean b1 = false;
+					boolean var11 = false;
+					boolean var21 = false;
+					for (String var : p.variables.keySet()) {
+						if (var.equals(value1) && !var11) {
+							value1 = p.variables.get(var);
+							b1 = true;
+							var11 = true;
+						}
+						if (var.equals(value2) && !var21) {
+							value2 = p.variables.get(var);
+							b1 = true;
+							var21 = true;
+						}
+					}
+					if (!b1) {
+						for (String classs : p.classes.keySet()) {
+							if (value1.startsWith(classs + ".")) {
+								for (String var : p.classes.get(classs).variables.keySet()) {
+									if (value1.equals(classs + "." + var)) {
+										value1 = p.classes.get(classs).variables.get(var);
+									}
+								}
+							}
+							if (value2.startsWith(classs + ".")) {
+								for (String var : p.classes.get(classs).variables.keySet()) {
+									if (value2.equals(classs + "." + var)) {
+										value2 = p.classes.get(classs).variables.get(var);
+									}
+								}
+							}
+						}
+					}
+				}
+				found = false;
+				return -1;
+			}
+		}
+		
 		for (String str : p.variables.keySet()) {
 			if (s.split(" ")[0].equals(str)) {
 				if (p.types.get(str) == "STRING") {
@@ -166,8 +366,10 @@ public class FinlayScript {
 							}
 						}
 						for (String strinn : p.env.methods.keySet()) {
-							if (stri.equals(strinn + "()")) {
-								p.env.methods.get(strinn).onMethod(strinn, orig);
+							if (stri.equals(strinn + "(")) {
+								if(p.env.methods.get(strinn).onMethod(strinn, orig,p)){
+									found = false;
+								}
 							}
 						}
 						for (String strin : p.variables.keySet()) {
@@ -192,7 +394,6 @@ public class FinlayScript {
 					p.variables.put(str, string);
 				} else if (p.types.get(str) == "BOOLEAN") {
 					String stri = s.substring(str.length()).split("=")[1] + " ";
-					;
 					boolean found1 = false;
 					for (String strin : p.classes.keySet()) {
 						if (stri.startsWith(strin + ".")) {
@@ -250,8 +451,11 @@ public class FinlayScript {
 						}
 					}
 					for (String strinn : p.env.methods.keySet()) {
-						if (stri.equals(strinn + "()")) {
-							p.env.methods.get(strinn).onMethod(strinn, orig);
+						if (stri.equals(strinn + "(")) {
+							if(p.env.methods.get(strinn).onMethod(strinn, orig, p)){
+								found = false;
+								return -1;
+							}
 						}
 					}
 					for (String strin : p.variables.keySet()) {
@@ -512,6 +716,7 @@ public class FinlayScript {
 
 	public static void main(String[] args) throws Exception {
 		Program p = new Program();
+		p.libraries.add(new IOLib());
 		interpret(p, new File("scripts/test.fscript"), new File("scripts/"));
 		p.exec();
 		System.out.println("Exit code: " + p.exitCode);
@@ -522,6 +727,10 @@ public class FinlayScript {
 		System.out.println();
 		for (String s : p.methods.keySet()) {
 			System.out.println("Name: " + s + ", Type: " + p.methodTypes.get(s) + " , Line: " + (p.methods.get(s) + 1));
+		}
+		System.out.println();
+		for (String s : p.lists.keySet()) {
+			System.out.println("Name: " + s + ", Type: " + p.listTypes.get(s) + " , Data: "+TextUtils.join(p.lists.get(s), " : "));
 		}
 		System.out.println();
 		for (String c : p.classes.keySet()) {
@@ -537,13 +746,17 @@ public class FinlayScript {
 						"Name: " + s + ", Type: " + p1.methodTypes.get(s) + " , Line: " + (p1.methods.get(s) + 1));
 			}
 			System.out.println();
+			for (String s : p1.lists.keySet()) {
+				System.out.println("Name: " + s + ", Type: " + p1.listTypes.get(s) + " , Data: "+TextUtils.join(p1.lists.get(s), " : "));
+			}
+			System.out.println();
 		}
 	}
 
 	public static int parseEquasion(String s, final Program p) {
 		for (String str : p.classes.keySet()) {
 			for (String method : p.classes.get(str).methods.keySet()) {
-				if (s.contains(str + "." + method+"()")) {
+				if (s.contains(str + "." + method + "()")) {
 					p.classes.get(str).execMethod(method);
 					String result = p.returnValue;
 					s.replaceAll(str + "." + method + "()", result);
@@ -551,14 +764,17 @@ public class FinlayScript {
 			}
 		}
 		for (String method : p.methods.keySet()) {
-			if (s.contains(method+"()")) {
+			if (s.contains(method + "()")) {
 				p.execMethod(method);
 				String result = p.returnValue;
-				s = s.replaceAll(method+"\\(\\)", result);
+				s = s.replaceAll(method + "\\(\\)", result);
 			}
 		}
 		for (String str : p.variables.keySet()) {
 			s = s.replaceAll(str, p.variables.get(str));
+		}
+		for(String str : p.lists.keySet()){
+			s = s.replaceAll(str+".size\\(\\)", String.valueOf(p.lists.get(str).size()));
 		}
 		final String str = s;
 		return (int) new Object() {
@@ -648,7 +864,7 @@ public class FinlayScript {
 						x = Math.cos(Math.toRadians(x));
 					else if (func.equals("tan"))
 						x = Math.tan(Math.toRadians(x));
-					else 
+					else
 						throw new RuntimeException("Unknown function: " + func);
 				} else {
 					throw new RuntimeException("Unexpected: " + (char) ch);
@@ -660,5 +876,48 @@ public class FinlayScript {
 				return x;
 			}
 		}.parse();
+	}
+	public static String parseString(String string, Program p){
+		String string1 = "";
+		for(String s : string.split("+")){
+			s = s.trim();
+			boolean b = true;
+			for(String var : p.variables.keySet()){
+				if(b){
+				if(s.equals(var)){
+					s = p.variables.get(var);
+					b = false;
+				}
+				}
+			}
+			for(String method : p.methods.keySet()){
+				if(b){
+					if(s.equals(method+"()")){
+						p.execMethod(method);
+						s = p.returnValue;
+						p.returnValue = "";
+						b = false;
+					}
+				}
+			}
+			for(String classs : p.classes.keySet()){
+				if(b){
+					if(s.startsWith(classs+".")){
+						for(String method : p.classes.get(classs).methods.keySet()){
+							if(b){
+								if(s.equals(classs+"."+method+"()")){
+									p.classes.get(classs).execMethod(method);
+									s = p.classes.get(classs).returnValue;
+									p.classes.get(classs).returnValue = "";
+									b = false;
+								}
+							}
+						}
+					}
+				}
+			}
+			string1 += s;
+		}
+		return string1;
 	}
 }

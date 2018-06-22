@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import com.thatmadhacker.cryptolib.CryptoLib;
 import com.thatmadhacker.iolib.IOLib;
 
 public class FinlayScript {
@@ -23,7 +24,7 @@ public class FinlayScript {
 
 	@SuppressWarnings({ "resource" })
 	public static void interpret(Program p, File f, File topDir) throws Exception {
-		for(Library l : p.libraries){
+		for (Library l : p.libraries) {
 			l.init(p);
 		}
 		Scanner scan = new Scanner(System.in);
@@ -92,49 +93,49 @@ public class FinlayScript {
 		}
 		s = s.replaceAll("\"", "");
 		boolean found = true;
-		for(Library l : p.libraries){
-			if(l.onLine(orig, p)){
+		for (Library l : p.libraries) {
+			if (l.onLine(orig, p)) {
 				return -1;
 			}
 		}
 		for (String strinn : p.env.methods.keySet()) {
 			if (s.startsWith(strinn + "(")) {
-				if(p.env.methods.get(strinn).onMethod(strinn, orig, p)){
+				if (p.env.methods.get(strinn).onMethod(strinn, orig, p)) {
 					found = false;
 					return -1;
 				}
 			}
 		}
-		for(String l : p.lists.keySet()){
-			if(s.startsWith(l+".add(")){
-				String data = s.substring((l+".add(").length(),s.lastIndexOf(")"));
+		for (String l : p.lists.keySet()) {
+			if (s.startsWith(l + ".add(")) {
+				String data = s.substring((l + ".add(").length(), s.lastIndexOf(")"));
 				p.lists.get(l).add(data);
 				found = true;
 				return -1;
 			}
-			if(s.startsWith(l+".remove(")){
-				String data = s.substring((l+".remove(").length(),s.lastIndexOf(")"));
+			if (s.startsWith(l + ".remove(")) {
+				String data = s.substring((l + ".remove(").length(), s.lastIndexOf(")"));
 				p.lists.get(l).remove(data);
 				found = true;
 				return -1;
 			}
 		}
-		if(s.startsWith("list<")){
+		if (s.startsWith("list<")) {
 			String type = s.substring(5, s.lastIndexOf(">"));
-			String name = s.substring(s.lastIndexOf(">")+2);
+			String name = s.substring(s.lastIndexOf(">") + 2);
 			p.lists.put(name, new ArrayList<String>());
 			p.listTypes.put(name, type);
 			found = true;
 			return -1;
 		}
-		if(s.startsWith("for(")){
-			String[] parse = s.substring(4,s.lastIndexOf(")")).split(":");
+		if (s.startsWith("for(")) {
+			String[] parse = s.substring(4, s.lastIndexOf(")")).split(":");
 			String type = parse[0].split(" ")[0];
 			String name = parse[0].split(" ")[1];
 			String list = parse[1];
 			String method = parse[2];
 			List<String> l = p.lists.get(list.trim());
-			for(String s1 : l){
+			for (String s1 : l) {
 				p.variables.put(name, s1);
 				p.types.put(name, type);
 				p.execMethod(method.trim());
@@ -144,10 +145,10 @@ public class FinlayScript {
 			found = true;
 			return -1;
 		}
-		if(s.startsWith("println(")){
-			String message = s.substring(8,s.lastIndexOf(")"));
-			for(String var : p.variables.keySet()){
-				if(var.equals(message)){
+		if (s.startsWith("println(")) {
+			String message = s.substring(8, s.lastIndexOf(")"));
+			for (String var : p.variables.keySet()) {
+				if (var.equals(message)) {
 					message = p.variables.get(var);
 				}
 			}
@@ -216,7 +217,7 @@ public class FinlayScript {
 			if (parse.length == 2) {
 				String variable = parse[0].trim();
 				String method = parse[1].trim().substring(0, parse[1].lastIndexOf("("));
-				
+
 				while (p.variables.get(variable).equalsIgnoreCase("TRUE")) {
 					p.execMethod(method);
 				}
@@ -301,7 +302,7 @@ public class FinlayScript {
 				return -1;
 			}
 		}
-		
+
 		for (String str : p.variables.keySet()) {
 			if (s.split(" ")[0].equals(str)) {
 				if (p.types.get(str) == "STRING") {
@@ -367,7 +368,7 @@ public class FinlayScript {
 						}
 						for (String strinn : p.env.methods.keySet()) {
 							if (stri.equals(strinn + "(")) {
-								if(p.env.methods.get(strinn).onMethod(strinn, orig,p)){
+								if (p.env.methods.get(strinn).onMethod(strinn, orig, p)) {
 									found = false;
 									stri = p.returnValue;
 								}
@@ -453,7 +454,7 @@ public class FinlayScript {
 					}
 					for (String strinn : p.env.methods.keySet()) {
 						if (stri.equals(strinn + "(")) {
-							if(p.env.methods.get(strinn).onMethod(strinn, orig, p)){
+							if (p.env.methods.get(strinn).onMethod(strinn, orig, p)) {
 								found = false;
 								stri = p.returnValue;
 							}
@@ -566,6 +567,16 @@ public class FinlayScript {
 			for (String stri : data.split("\\+")) {
 				stri = stri.trim();
 				boolean found1 = false;
+				for (String strinn : p.env.methods.keySet()) {
+					if (stri.contains(")")) {
+						if (stri.startsWith(strinn + "(")) {
+							if (p.env.methods.get(strinn).onMethod(strinn, orig, p)) {
+								found1 = true;
+								stri = p.returnValue;
+							}
+						}
+					}
+				}
 				for (String strin : p.classes.keySet()) {
 					if (stri.startsWith(strin + ".")) {
 						for (String strinn : p.classes.get(strin).methods.keySet()) {
@@ -637,6 +648,14 @@ public class FinlayScript {
 			String stri = s.substring(str.length()).split("=")[1] + " ";
 			;
 			boolean found1 = false;
+			for (String strinn : p.env.methods.keySet()) {
+				if (stri.startsWith(strinn + "(")) {
+					if (p.env.methods.get(strinn).onMethod(strinn, orig, p)) {
+						found1 = true;
+						stri = p.returnValue;
+					}
+				}
+			}
 			for (String strin : p.classes.keySet()) {
 				if (stri.startsWith(strin + ".")) {
 					for (String strinn : p.classes.get(strin).methods.keySet()) {
@@ -718,6 +737,7 @@ public class FinlayScript {
 	public static void main(String[] args) throws Exception {
 		Program p = new Program();
 		p.libraries.add(new IOLib());
+		p.libraries.add(new CryptoLib());
 		interpret(p, new File("scripts/test.fscript"), new File("scripts/"));
 		p.exec();
 		System.out.println("Exit code: " + p.exitCode);
@@ -731,7 +751,8 @@ public class FinlayScript {
 		}
 		System.out.println();
 		for (String s : p.lists.keySet()) {
-			System.out.println("Name: " + s + ", Type: " + p.listTypes.get(s) + " , Data: "+TextUtils.join(p.lists.get(s), " : "));
+			System.out.println("Name: " + s + ", Type: " + p.listTypes.get(s) + " , Data: "
+					+ TextUtils.join(p.lists.get(s), " : "));
 		}
 		System.out.println();
 		for (String c : p.classes.keySet()) {
@@ -748,7 +769,8 @@ public class FinlayScript {
 			}
 			System.out.println();
 			for (String s : p1.lists.keySet()) {
-				System.out.println("Name: " + s + ", Type: " + p1.listTypes.get(s) + " , Data: "+TextUtils.join(p1.lists.get(s), " : "));
+				System.out.println("Name: " + s + ", Type: " + p1.listTypes.get(s) + " , Data: "
+						+ TextUtils.join(p1.lists.get(s), " : "));
 			}
 			System.out.println();
 		}
@@ -774,8 +796,8 @@ public class FinlayScript {
 		for (String str : p.variables.keySet()) {
 			s = s.replaceAll(str, p.variables.get(str));
 		}
-		for(String str : p.lists.keySet()){
-			s = s.replaceAll(str+".size\\(\\)", String.valueOf(p.lists.get(str).size()));
+		for (String str : p.lists.keySet()) {
+			s = s.replaceAll(str + ".size\\(\\)", String.valueOf(p.lists.get(str).size()));
 		}
 		final String str = s;
 		return (int) new Object() {
@@ -878,22 +900,35 @@ public class FinlayScript {
 			}
 		}.parse();
 	}
-	public static String parseString(String string, Program p){
+
+	public static String parseString(String string, Program p) {
 		String string1 = "";
-		for(String s : string.split("+")){
+		for (String s : string.split("\\+")) {
 			s = s.trim();
 			boolean b = true;
-			for(String var : p.variables.keySet()){
-				if(b){
-				if(s.equals(var)){
-					s = p.variables.get(var);
-					b = false;
-				}
+			if(s.startsWith("\"")){
+				s = s.replaceAll("\"", "");
+				b = true;
+			}
+			for(String method : p.env.methods.keySet()){
+				if(s.startsWith(method+"(")){
+					if(p.env.methods.get(method).onMethod(method, s, p)){
+						s = p.returnValue;
+						b = false;
+					}
 				}
 			}
-			for(String method : p.methods.keySet()){
-				if(b){
-					if(s.equals(method+"()")){
+			for (String var : p.variables.keySet()) {
+				if (b) {
+					if (s.equals(var)) {
+						s = p.variables.get(var);
+						b = false;
+					}
+				}
+			}
+			for (String method : p.methods.keySet()) {
+				if (b) {
+					if (s.equals(method + "()")) {
 						p.execMethod(method);
 						s = p.returnValue;
 						p.returnValue = "";
@@ -901,12 +936,12 @@ public class FinlayScript {
 					}
 				}
 			}
-			for(String classs : p.classes.keySet()){
-				if(b){
-					if(s.startsWith(classs+".")){
-						for(String method : p.classes.get(classs).methods.keySet()){
-							if(b){
-								if(s.equals(classs+"."+method+"()")){
+			for (String classs : p.classes.keySet()) {
+				if (b) {
+					if (s.startsWith(classs + ".")) {
+						for (String method : p.classes.get(classs).methods.keySet()) {
+							if (b) {
+								if (s.equals(classs + "." + method + "()")) {
 									p.classes.get(classs).execMethod(method);
 									s = p.classes.get(classs).returnValue;
 									p.classes.get(classs).returnValue = "";

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import com.thatmadhacker.finlayscript.FinlayScript;
 import com.thatmadhacker.finlayscript.Library;
 import com.thatmadhacker.finlayscript.Program;
 
@@ -16,11 +17,11 @@ public class IOLib implements Library {
 
 	@Override
 	public boolean onMethod(String name, String line, Program p) {
-		if (line.startsWith("write")) {
+		if (name.equals("write")) {
 			if (p.hasPermission("IOWRITE") || p.hasPermission("IO*")) {
-				line = line.substring(6, line.lastIndexOf(")"));
-				String path = line.split(",")[0].replaceAll("\"", "").trim();
-				String data = line.split(",")[1].replaceAll("\"", "").trim();
+				line = line.substring(line.indexOf(name+"(")+name.length()+1, line.lastIndexOf(")"));
+				String path = FinlayScript.parseString(line.split(",")[0].trim(),p);
+				String data = FinlayScript.parseString(line.split(",")[1].trim(),p).replaceAll("\"", "");
 				boolean append = Boolean.valueOf(line.split(",")[2]);
 				File f = new File(path);
 				if (!append) {
@@ -41,9 +42,9 @@ public class IOLib implements Library {
 				out.close();
 			}
 			return true;
-		} else if (line.startsWith("create")) {
+		} else if (name.equals("create")) {
 			if (p.hasPermission("IOCREATE") || p.hasPermission("IO*")) {
-				String file = line.substring(7, line.lastIndexOf(")")).replaceAll("\"", "").trim();
+				String file = FinlayScript.parseString(line.substring(line.indexOf(name+"(")+name.length()+1, line.lastIndexOf(")")).trim(),p);
 				File f = new File(file);
 				try {
 					f.createNewFile();
@@ -52,30 +53,30 @@ public class IOLib implements Library {
 				}
 			}
 			return true;
-		} else if (line.startsWith("delete")) {
+		} else if (name.equals("delete")) {
 			if (p.hasPermission("IODELETE") || p.hasPermission("IO*")) {
-				String file = line.substring(7, line.lastIndexOf(")")).replaceAll("\"", "").trim();
+				String file = FinlayScript.parseString(line.substring(line.indexOf(name+"(")+name.length()+1, line.lastIndexOf(")")).trim(),p);
 				File f = new File(file);
 				f.delete();
 			}
 			return true;
-		} else if (line.startsWith("mkdir")) {
+		} else if (name.equals("mkdir")) {
 			if (p.hasPermission("IOMKDIR") || p.hasPermission("IO*")) {
-				String file = line.substring(6, line.lastIndexOf(")")).replaceAll("\"", "").trim();
+				String file = FinlayScript.parseString(line.substring(line.indexOf(name+"(")+name.length()+1, line.lastIndexOf(")")).trim(),p);
 				File f = new File(file);
 				f.mkdir();
 			}
 			return true;
-		} else if (line.startsWith("mkdirs")) {
+		} else if (name.equals("mkdirs")) {
 			if (p.hasPermission("IOMKDIR") || p.hasPermission("IO*")) {
-				String file = line.substring(6, line.lastIndexOf(")")).replaceAll("\"", "").trim();
+				String file = FinlayScript.parseString(line.substring(line.indexOf(name+"(")+name.length()+1, line.lastIndexOf(")")).trim(),p);
 				File f = new File(file);
 				f.mkdirs();
 			}
 			return true;
-		} else if (line.startsWith("read")) {
+		} else if (name.equals("read")) {
 			if (p.hasPermission("IOREAD") || p.hasPermission("IO*")) {
-				String file = line.substring(5, line.lastIndexOf(")")).replaceAll("\"", "").trim();
+				String file = FinlayScript.parseString(line.substring(line.indexOf(name+"(")+name.length()+1, line.lastIndexOf(")")).trim(),p);
 				File f = new File(file);
 				try {
 					Scanner in = new Scanner(f);
@@ -85,6 +86,7 @@ public class IOLib implements Library {
 					}
 					in.close();
 					p.lists.put("read", lines);
+					p.returnValue = combine(lines, "");
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}
@@ -108,6 +110,14 @@ public class IOLib implements Library {
 		p.env.methods.put("mkdir", this);
 		p.env.methods.put("mkdirs", this);
 		p.env.methods.put("read", this);
+	}
+	public static String combine(List<String> s,String seperator){
+		String string = "";
+		for(String str : s){
+			string += str+seperator;
+		}
+		string = string.substring(0, string.length()-seperator.length());
+		return string;
 	}
 
 }

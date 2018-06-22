@@ -10,10 +10,10 @@ public class CryptoLib implements Library{
 
 	@Override
 	public boolean onMethod(String name, String line, Program p) {
-		if(line.startsWith("genKey(")){
-			line = line.substring(10, line.lastIndexOf(")"));
-			String algo = FinlayScript.parseString(line.split(",")[0].replaceAll("\"", "").trim(),p);
-			int length = Integer.valueOf(FinlayScript.parseEquasion(line.split(",")[1].replaceAll("\"", "").trim(),p));
+		if(name.equals("genKey")){
+			line = line.substring(line.indexOf("genKey(")+name.length()+1, line.lastIndexOf(")"));
+			String algo = FinlayScript.parseString(line.split(",")[0].trim(),p);
+			int length = Integer.valueOf(FinlayScript.parseEquasion(line.split(",")[1].trim(),p));
 			try {
 				SecretKey key = Symetric.genKey(algo, length);
 				p.returnValue = BASE64.encode(key.getEncoded());
@@ -21,11 +21,11 @@ public class CryptoLib implements Library{
 				e.printStackTrace();
 			}
 			return true;
-		}else if(line.startsWith("encrypt(")){
-			line = line.substring(10, line.lastIndexOf(")"));
-			String algo = FinlayScript.parseString(line.split(",")[0].replaceAll("\"", "").trim(),p);
-			String key = FinlayScript.parseString(line.split(",")[1].replaceAll("\"", "").trim(),p);
-			String message = FinlayScript.parseString(line.split(",")[2].replaceAll("\"", "").trim(),p);
+		}else if(name.equals("encrypt")){
+			line = line.substring(line.indexOf("encrypt(")+name.length()+1, line.lastIndexOf(")"));
+			String algo = FinlayScript.parseString(line.split(",")[0].trim(),p);
+			String key = FinlayScript.parseString(line.split(",")[1].trim(),p);
+			String message = FinlayScript.parseString(line.split(",")[2].trim(),p);
 			try {
 				SecretKey secret = Symetric.genKeyFromByteArray(BASE64.decode(key), algo);
 				p.returnValue = Symetric.encrypt(message, secret, algo);
@@ -33,11 +33,11 @@ public class CryptoLib implements Library{
 				e.printStackTrace();
 			}
 			return true;
-		}else if(line.startsWith("decrypt(")){
-			line = line.substring(10, line.lastIndexOf(")"));
-			String algo = FinlayScript.parseString(line.split(",")[0].replaceAll("\"", "").trim(),p);
-			String key = FinlayScript.parseString(line.split(",")[1].replaceAll("\"", "").trim(),p);
-			String message = FinlayScript.parseString(line.split(",")[2].replaceAll("\"", "").trim(),p);
+		}else if(name.equals("decrypt")){
+			line = line.substring(line.indexOf("decrypt(")+name.length()+1, line.lastIndexOf(")"));
+			String algo = FinlayScript.parseString(line.split(",")[0].trim(),p);
+			String key = FinlayScript.parseString(line.split(",")[1].trim(),p);
+			String message = FinlayScript.parseString(line.split(",")[2].trim(),p);
 			try {
 				SecretKey secret = Symetric.genKeyFromByteArray(BASE64.decode(key), algo);
 				p.returnValue = Symetric.decrypt(message, secret, algo);
@@ -45,10 +45,10 @@ public class CryptoLib implements Library{
 				e.printStackTrace();
 			}
 			return true;
-		}else if(line.startsWith("hash(")){
-			line = line.substring(10, line.lastIndexOf(")"));
-			String algo = FinlayScript.parseString(line.split(",")[0].replaceAll("\"", "").trim(),p);
-			String message = FinlayScript.parseString(line.split(",")[1].replaceAll("\"", "").trim(),p);
+		}else if(name.equals("hash")){
+			line = line.substring(line.indexOf("hash(")+name.length()+1, line.lastIndexOf(")"));
+			String algo = FinlayScript.parseString(line.split(",")[0].trim(),p);
+			String message = FinlayScript.parseString(line.split(",")[1].trim(),p);
 			try {
 				p.returnValue = HashingUtils.hash(message, algo);
 			} catch (Exception e) {

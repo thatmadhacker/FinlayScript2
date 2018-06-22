@@ -26,6 +26,9 @@ void() test{
 	delete("test.txt")
 	create("test.txt")
 	write("test.txt","test123",true)
+	String key = genKey("AES",128)
+	String crypt = encrypt("AES",key,"hello")
+	write("test.txt",crypt,true)
 	test12345()
 	if(i1,0,test123456())
 	int j = 0

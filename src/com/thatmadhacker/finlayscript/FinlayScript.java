@@ -369,6 +369,7 @@ public class FinlayScript {
 							if (stri.equals(strinn + "(")) {
 								if(p.env.methods.get(strinn).onMethod(strinn, orig,p)){
 									found = false;
+									stri = p.returnValue;
 								}
 							}
 						}
@@ -454,7 +455,7 @@ public class FinlayScript {
 						if (stri.equals(strinn + "(")) {
 							if(p.env.methods.get(strinn).onMethod(strinn, orig, p)){
 								found = false;
-								return -1;
+								stri = p.returnValue;
 							}
 						}
 					}

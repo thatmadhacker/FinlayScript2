@@ -9,8 +9,8 @@ import com.thatmadhacker.finlayscript.Program;
 public class CryptoLib implements Library{
 
 	@Override
-	public boolean onMethod(String name, String line, Program p) {
-		if(name.equals("genKey")){
+	public boolean onMethod(String name, String line, Program p, String[] args) {
+		if(name.equalsIgnoreCase("genKey")){
 			line = line.substring(line.indexOf("genKey(")+name.length()+1, line.lastIndexOf(")"));
 			String algo = FinlayScript.parseString(line.split(",")[0].trim(),p);
 			int length = Integer.valueOf(FinlayScript.parseEquasion(line.split(",")[1].trim(),p));
@@ -21,7 +21,7 @@ public class CryptoLib implements Library{
 				e.printStackTrace();
 			}
 			return true;
-		}else if(name.equals("encrypt")){
+		}else if(name.equalsIgnoreCase("encrypt")){
 			line = line.substring(line.indexOf("encrypt(")+name.length()+1, line.lastIndexOf(")"));
 			String algo = FinlayScript.parseString(line.split(",")[0].trim(),p);
 			String key = FinlayScript.parseString(line.split(",")[1].trim(),p);
@@ -33,7 +33,7 @@ public class CryptoLib implements Library{
 				e.printStackTrace();
 			}
 			return true;
-		}else if(name.equals("decrypt")){
+		}else if(name.equalsIgnoreCase("decrypt")){
 			line = line.substring(line.indexOf("decrypt(")+name.length()+1, line.lastIndexOf(")"));
 			String algo = FinlayScript.parseString(line.split(",")[0].trim(),p);
 			String key = FinlayScript.parseString(line.split(",")[1].trim(),p);
@@ -45,7 +45,7 @@ public class CryptoLib implements Library{
 				e.printStackTrace();
 			}
 			return true;
-		}else if(name.equals("hash")){
+		}else if(name.equalsIgnoreCase("hash")){
 			line = line.substring(line.indexOf("hash(")+name.length()+1, line.lastIndexOf(")"));
 			String algo = FinlayScript.parseString(line.split(",")[0].trim(),p);
 			String message = FinlayScript.parseString(line.split(",")[1].trim(),p);

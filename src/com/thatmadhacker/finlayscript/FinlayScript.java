@@ -100,7 +100,8 @@ public class FinlayScript {
 		}
 		for (String strinn : p.env.methods.keySet()) {
 			if (s.startsWith(strinn + "(")) {
-				if (p.env.methods.get(strinn).onMethod(strinn, orig, p)) {
+				String[] args = strinn.substring(strinn.indexOf("("), strinn.lastIndexOf(")")).split(",");
+				if (p.env.methods.get(strinn).onMethod(strinn, orig, p,args)) {
 					found = false;
 					return -1;
 				}
@@ -368,7 +369,8 @@ public class FinlayScript {
 						}
 						for (String strinn : p.env.methods.keySet()) {
 							if (stri.equals(strinn + "(")) {
-								if (p.env.methods.get(strinn).onMethod(strinn, orig, p)) {
+								String[] args = stri.substring(stri.indexOf("("), stri.lastIndexOf(")")).split(",");
+								if (p.env.methods.get(strinn).onMethod(strinn, orig, p,args)) {
 									found = false;
 									stri = p.returnValue;
 								}
@@ -454,7 +456,8 @@ public class FinlayScript {
 					}
 					for (String strinn : p.env.methods.keySet()) {
 						if (stri.equals(strinn + "(")) {
-							if (p.env.methods.get(strinn).onMethod(strinn, orig, p)) {
+							String[] args = stri.substring(stri.indexOf("("), stri.lastIndexOf(")")).split(",");
+							if (p.env.methods.get(strinn).onMethod(strinn, orig, p,args)) {
 								found = false;
 								stri = p.returnValue;
 							}
@@ -570,7 +573,8 @@ public class FinlayScript {
 				for (String strinn : p.env.methods.keySet()) {
 					if (stri.contains(")")) {
 						if (stri.startsWith(strinn + "(")) {
-							if (p.env.methods.get(strinn).onMethod(strinn, orig, p)) {
+							String[] args = stri.substring(stri.indexOf("("), stri.lastIndexOf(")")).split(",");
+							if (p.env.methods.get(strinn).onMethod(strinn, orig, p,args)) {
 								found1 = true;
 								stri = p.returnValue;
 							}
@@ -650,7 +654,8 @@ public class FinlayScript {
 			boolean found1 = false;
 			for (String strinn : p.env.methods.keySet()) {
 				if (stri.startsWith(strinn + "(")) {
-					if (p.env.methods.get(strinn).onMethod(strinn, orig, p)) {
+					String[] args = stri.substring(stri.indexOf("("), stri.lastIndexOf(")")).split(",");
+					if (p.env.methods.get(strinn).onMethod(strinn, orig, p,args)) {
 						found1 = true;
 						stri = p.returnValue;
 					}
@@ -912,7 +917,8 @@ public class FinlayScript {
 			}
 			for(String method : p.env.methods.keySet()){
 				if(s.startsWith(method+"(")){
-					if(p.env.methods.get(method).onMethod(method, s, p)){
+					String[] args = s.substring(s.indexOf("("), s.lastIndexOf(")")).split(",");
+					if(p.env.methods.get(method).onMethod(method, s, p,args)){
 						s = p.returnValue;
 						b = false;
 					}

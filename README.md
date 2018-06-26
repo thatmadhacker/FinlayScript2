@@ -11,6 +11,6 @@ Simply run the FinlayScript class
 Running FinlayScript2 code:
 
 Create a new Program
-`Program p = new Program();`
+`Program p = new Program(scriptFile, scriptDir);`
 next call `FinlayScript.interpret(p);`
 then call `p.exec();`

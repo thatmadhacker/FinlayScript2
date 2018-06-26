@@ -11,10 +11,11 @@ Simply run the FinlayScript class
 Running FinlayScript2 code:
 
 Create a new Program and execute it call
-`Program p = new Program();
 
-p.libraries.addAll(libs);
+`Program p = new Program();`
 
-FinlayScript.interpret(p,scriptFile,scriptDir);
+`p.libraries.addAll(libs);`
 
-p.exec();`
+`FinlayScript.interpret(p,scriptFile,scriptDir);`
+
+`p.exec();`

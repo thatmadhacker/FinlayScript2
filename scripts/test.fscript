@@ -1,4 +1,5 @@
 <import> "test2.fscript" as test2
+<permission> IO*
 void() main{
 	String test1 = "hello"
 	String test2 = "test1"
@@ -20,11 +21,56 @@ void() test{
 	String test1234 = test1234()
 	int test12345 = test1234
 	String testing = test12345
+	int testing1 = integer()
+	boolean b = false
+	delete("test.txt")
+	create("test.txt")
+	write("test.txt","t",true)
+	String key = genKey("AES",128)
+	delete("key.txt")
+	create("key.txt)
+	write("key.txt",key,true)
+	String crypt = encrypt("AES",key,"hello")
+	write("test.txt",crypt,true)
+	String key1 = read("key.txt")
+	String messag1 = decrypt("AES",key1,read("test.txt"))
+	test12345()
+	if(i1,0,test123456())
+	int j = 0
+	list<String> listTest
+	listTest.add(hh31)
+	listTest.add(test)
+	int l = listTest.size()
+	for(String string7 : listTest : list)
+	while(i1,1,hello1234())
 	test2.test()
+}
+void() list{
+	println(string7)
 }
 String() test123{
 	return(test)
 }
 String() test1234{
 	return(1)
+}
+int() integer{
+	return(1)
+}
+void() test12345{
+	int i1 = 0
+}
+void() test123456{
+	i1 = 1
+}
+void() hello1234{
+	j = j + 1
+	if(j,10,setI())
+	print()
+}
+void() print{
+	println(j)
+}
+void() setI{
+	i1 = 0
 }

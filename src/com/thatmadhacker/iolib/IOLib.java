@@ -15,6 +15,7 @@ import com.thatmadhacker.finlayscript.Program;
 
 public class IOLib implements Library {
 
+	Scanner in = new Scanner(System.in);
 	@Override
 	public boolean onMethod(String name, String line, Program p, String[] args) {
 		if (name.equalsIgnoreCase("write")) {
@@ -93,6 +94,18 @@ public class IOLib implements Library {
 				
 			}
 			return true;
+		}else if (name.equalsIgnoreCase("println")) {
+			String string = "";
+			for(String s : args){
+				string = string + ","+s;
+			}
+			string = string.substring(1);
+			string = FinlayScript.parseString(string, p);
+			System.out.println(string);
+			return true;
+		}else if(name.equalsIgnoreCase("readConsole")){
+			p.returnValue = in.nextLine();
+			return true;
 		}
 		return false;
 	}
@@ -110,6 +123,8 @@ public class IOLib implements Library {
 		p.env.methods.put("mkdir", this);
 		p.env.methods.put("mkdirs", this);
 		p.env.methods.put("read", this);
+		p.env.methods.put("println", this);
+		p.env.methods.put("readConsole", this);
 	}
 	public static String combine(List<String> s,String seperator){
 		String string = "";

@@ -25,9 +25,6 @@ public class FinlayScript {
 
 	@SuppressWarnings({ "resource" })
 	public static void interpret(Program p, File f, File topDir) throws Exception {
-		for (Library l : p.libraries) {
-			l.init(p);
-		}
 		Scanner scan = new Scanner(System.in);
 		Scanner in = new Scanner(f);
 		List<String> lines = new ArrayList<String>();
@@ -74,6 +71,16 @@ public class FinlayScript {
 					p.permissions.add(permission);
 				} else {
 					continue;
+				}
+			} else if (s.startsWith("<lib>")){
+				s = s.substring(5);
+				s = s.trim();
+				String lib = s.substring(0, s.length()-1).toLowerCase();
+				for(Library l : p.libraries){
+					if(l.getName().equalsIgnoreCase(lib) && l.isInit() == false){
+						l.init(p);
+						l.setInit(true);
+					}
 				}
 			}
 		}
@@ -303,6 +310,10 @@ public class FinlayScript {
 					for (String stri : data.split("\\+")) {
 						stri = stri.trim();
 						boolean found1 = false;
+						if(stri.startsWith("\"")){
+							found1 = true;
+							stri = stri.substring(0, stri.length()-1);
+						}
 						for (String strin : p.classes.keySet()) {
 							if (stri.startsWith(strin + ".")) {
 								for (String strinn : p.classes.get(strin).methods.keySet()) {
@@ -506,6 +517,10 @@ public class FinlayScript {
 			for (String ret : s.split("\\+")) {
 				ret = ret.trim();
 				boolean found1 = true;
+				if(ret.startsWith("\"")){
+					found1 = false;
+					ret = ret.substring(0, ret.length()-1);
+				}
 				for (String cla : p.classes.keySet()) {
 					if (ret.startsWith(cla + ".")) {
 						ret = ret.substring(cla.length() + 1);
@@ -523,9 +538,6 @@ public class FinlayScript {
 							ret = p.variables.get(var);
 						}
 					}
-				}
-				if (found1) {
-					ret = ret.replaceAll("\"", "");
 				}
 				re += ret;
 			}
@@ -561,8 +573,12 @@ public class FinlayScript {
 			for (String stri : data.split("\\+")) {
 				stri = stri.trim();
 				boolean found1 = false;
+				if(stri.startsWith("\"")){
+					found1 = true;
+					stri = stri.substring(0,stri.length()-1);
+				}
 				for (String strinn : p.env.methods.keySet()) {
-					if (stri.contains(")")) {
+					if (stri.contains(")") && !found) {
 						if (stri.startsWith(strinn + "(")) {
 							String[] args = stri.substring(stri.indexOf("("), stri.lastIndexOf(")")).split(",");
 							if (p.env.methods.get(strinn).onMethod(strinn, orig, p,args)) {
@@ -634,7 +650,6 @@ public class FinlayScript {
 				}
 				string += stri;
 			}
-			string = string.replaceAll("\"", "");
 			p.variables.put(varName, string);
 			p.types.put(varName, "STRING");
 		} else if (s.startsWith("boolean") && !s.startsWith("boolean()")) {
@@ -904,13 +919,13 @@ public class FinlayScript {
 			s = s.trim();
 			boolean b = true;
 			if(s.startsWith("\"")){
-				s = s.replaceAll("\"", "");
+				s = s.substring(0,s.length()-1);
 				b = true;
 			}
 			for(String method : p.env.methods.keySet()){
 				if(s.startsWith(method+"(")){
 					String[] args = s.substring(s.indexOf("("), s.lastIndexOf(")")).split(",");
-					if(p.env.methods.get(method).onMethod(method, s, p,args)){
+					if(p.env.methods.get(method).onMethod(method, s, p,args) && b){
 						s = p.returnValue;
 						b = false;
 					}

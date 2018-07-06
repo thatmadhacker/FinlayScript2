@@ -13,7 +13,7 @@ import com.thatmadhacker.finlayscript.FinlayScript;
 import com.thatmadhacker.finlayscript.Library;
 import com.thatmadhacker.finlayscript.Program;
 
-public class IOLib implements Library {
+public class IOLib extends Library {
 
 	Scanner in = new Scanner(System.in);
 	@Override
@@ -133,6 +133,11 @@ public class IOLib implements Library {
 		}
 		string = string.substring(0, string.length()-seperator.length());
 		return string;
+	}
+
+	@Override
+	public String getName() {
+		return "iolib";
 	}
 
 }

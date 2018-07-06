@@ -1,6 +1,14 @@
 <import> "test2.fscript" as test2
+
+<lib> "iolib"
+<lib> "networkinglib"
+<lib> "cryptolib"
+
 <permission> IO*
 void() main{
+	//Use this to make a comment
+	;Or this!
+	// each seperate statement must be made on seperate lines, if two things are on the same line there will be issues!
 	String test1 = "hello"
 	String test2 = "test1"
 	String cool = "test"
@@ -28,7 +36,7 @@ void() test{
 	write("test.txt","t",true)
 	String key = genKey("AES",128)
 	delete("key.txt")
-	create("key.txt)
+	create("key.txt")
 	write("key.txt",key,true)
 	String crypt = encrypt("AES",key,"hello")
 	write("test.txt",crypt,true)

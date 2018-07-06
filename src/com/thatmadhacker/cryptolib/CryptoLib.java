@@ -6,7 +6,7 @@ import com.thatmadhacker.finlayscript.FinlayScript;
 import com.thatmadhacker.finlayscript.Library;
 import com.thatmadhacker.finlayscript.Program;
 
-public class CryptoLib implements Library{
+public class CryptoLib extends Library{
 
 	@Override
 	public boolean onMethod(String name, String line, Program p, String[] args) {
@@ -71,6 +71,11 @@ public class CryptoLib implements Library{
 		p.env.methods.put("encrypt", this);
 		p.env.methods.put("decrypt", this);
 		p.env.methods.put("hash", this);
+	}
+
+	@Override
+	public String getName() {
+		return "cryptolib";
 	}
 
 }

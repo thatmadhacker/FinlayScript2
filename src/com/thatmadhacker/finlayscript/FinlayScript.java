@@ -25,9 +25,6 @@ public class FinlayScript {
 
 	@SuppressWarnings({ "resource" })
 	public static void interpret(Program p, File f, File topDir) throws Exception {
-		for (Library l : p.libraries) {
-			l.init(p);
-		}
 		Scanner scan = new Scanner(System.in);
 		Scanner in = new Scanner(f);
 		List<String> lines = new ArrayList<String>();
@@ -75,6 +72,16 @@ public class FinlayScript {
 				} else {
 					continue;
 				}
+			} else if (s.startsWith("<lib>")){
+				s = s.substring(5);
+				s = s.trim();
+				String lib = s.substring(1, s.length()-1).toLowerCase();
+				for(Library l : p.libraries){
+					if(l.getName().equalsIgnoreCase(lib) && l.isInit() == false){
+						l.init(p);
+						l.setInit(true);
+					}
+				}
 			}
 		}
 	}
@@ -92,7 +99,6 @@ public class FinlayScript {
 		if (s.startsWith("boolean()") || s.startsWith("String()") || s.startsWith("int()") || s.startsWith("void()")) {
 			return -1;
 		}
-		s = s.replaceAll("\"", "");
 		boolean found = true;
 		for (Library l : p.libraries) {
 			if (l.onLine(orig, p)) {
@@ -299,94 +305,9 @@ public class FinlayScript {
 			if (s.split(" ")[0].equals(str)) {
 				if (p.types.get(str) == "STRING") {
 					String data = s.substring(str.length()).split("=")[1] + " ";
-					String string = "";
-					for (String stri : data.split("\\+")) {
-						stri = stri.trim();
-						boolean found1 = false;
-						for (String strin : p.classes.keySet()) {
-							if (stri.startsWith(strin + ".")) {
-								for (String strinn : p.classes.get(strin).methods.keySet()) {
-									if (stri.substring(strin.length() + 1).equals(strinn + "()")) {
-										if (!found1) {
-											boolean b = false;
-											for (int i1 = p.classes.get(strin).methods.get(strinn); i1 < p.lines
-													.size(); i1++) {
-												String line = p.classes.get(strin).lines.get(i1);
-												if (line.startsWith("}")) {
-													i1 = p.classes.get(strin).lines.size() + 1;
-													continue;
-												}
-												if (!b) {
-													decodeLine(line, p.classes.get(strin), topDir, i1);
-													if (!p.classes.get(strin).returnValue.equals("")) {
-														String returnValue = p.classes.get(strin).returnValue;
-														stri = returnValue;
-														p.classes.get(strin).returnValue = "";
-														b = true;
-														found1 = true;
-														found = false;
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-						for (String strinn : p.methods.keySet()) {
-							if (stri.equals(strinn + "()")) {
-								if (!found1) {
-									boolean b = false;
-									for (int i1 = p.methods.get(strinn); i1 < p.lines.size(); i1++) {
-										String line = p.lines.get(i1);
-										if (line.startsWith("}")) {
-											i1 = p.lines.size() + 1;
-											continue;
-										}
-										if (!b) {
-											decodeLine(line, p, topDir, i1);
-											if (!p.returnValue.equals("")) {
-												String returnValue = p.returnValue;
-												stri = returnValue;
-												p.returnValue = "";
-												b = true;
-												found1 = true;
-												found = false;
-											}
-										}
-									}
-								}
-							}
-						}
-						for (String strinn : p.env.methods.keySet()) {
-							if (stri.equals(strinn + "(")) {
-								String[] args = stri.substring(stri.indexOf("("), stri.lastIndexOf(")")).split(",");
-								if (p.env.methods.get(strinn).onMethod(strinn, orig, p,args)) {
-									found = false;
-									stri = p.returnValue;
-								}
-							}
-						}
-						for (String strin : p.variables.keySet()) {
-							if (strin.equals(stri)) {
-								if (!found) {
-									stri = p.variables.get(strin);
-									found = false;
-								}
-							}
-						}
-						for (String strin : p.env.variables.keySet()) {
-							if (strin.equals(stri)) {
-								if (!found) {
-									stri = p.env.variables.get(strin);
-									found = false;
-								}
-							}
-						}
-						string += stri;
-					}
-					string = string.replaceAll("\"", "");
+					String string = parseString(data, p);
 					p.variables.put(str, string);
+					return -1;
 				} else if (p.types.get(str) == "BOOLEAN") {
 					String stri = s.substring(str.length()).split("=")[1] + " ";
 					boolean found1 = false;
@@ -471,10 +392,12 @@ public class FinlayScript {
 						}
 					}
 					p.variables.put(str, stri);
+					return -1;
 				} else if (p.types.get(str) == "INTEGER") {
 					String data = s.substring(str.length()).split("=")[1] + " ";
 					int value = parseEquasion(data.trim(), p);
 					p.variables.put(str, String.valueOf(value));
+					return -1;
 				}
 			}
 		}
@@ -506,6 +429,10 @@ public class FinlayScript {
 			for (String ret : s.split("\\+")) {
 				ret = ret.trim();
 				boolean found1 = true;
+				if(ret.startsWith("\"")){
+					found1 = false;
+					ret = ret.substring(0, ret.length()-1);
+				}
 				for (String cla : p.classes.keySet()) {
 					if (ret.startsWith(cla + ".")) {
 						ret = ret.substring(cla.length() + 1);
@@ -523,9 +450,6 @@ public class FinlayScript {
 							ret = p.variables.get(var);
 						}
 					}
-				}
-				if (found1) {
-					ret = ret.replaceAll("\"", "");
 				}
 				re += ret;
 			}
@@ -557,84 +481,7 @@ public class FinlayScript {
 			s = s.substring(6);
 			String varName = s.split(" ")[1];
 			String data = s.substring(varName.length()).split("=")[1] + " ";
-			String string = "";
-			for (String stri : data.split("\\+")) {
-				stri = stri.trim();
-				boolean found1 = false;
-				for (String strinn : p.env.methods.keySet()) {
-					if (stri.contains(")")) {
-						if (stri.startsWith(strinn + "(")) {
-							String[] args = stri.substring(stri.indexOf("("), stri.lastIndexOf(")")).split(",");
-							if (p.env.methods.get(strinn).onMethod(strinn, orig, p,args)) {
-								found1 = true;
-								stri = p.returnValue;
-							}
-						}
-					}
-				}
-				for (String strin : p.classes.keySet()) {
-					if (stri.startsWith(strin + ".")) {
-						for (String strinn : p.classes.get(strin).methods.keySet()) {
-							if (stri.substring(strin.length() + 1).equals(strinn + "()")) {
-								if (!found) {
-									boolean b = false;
-									for (int i1 = p.classes.get(strin).methods.get(strinn); i1 < p.lines.size(); i1++) {
-										String line = p.classes.get(strin).lines.get(i1);
-										if (line.startsWith("}")) {
-											i1 = p.classes.get(strin).lines.size() + 1;
-											continue;
-										}
-										if (!b) {
-											decodeLine(line, p.classes.get(strin), topDir, i1);
-											if (!p.classes.get(strin).returnValue.equals("")) {
-												String returnValue = p.classes.get(strin).returnValue;
-												stri = returnValue;
-												p.classes.get(strin).returnValue = "";
-												b = true;
-												found1 = true;
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-				for (String strinn : p.methods.keySet()) {
-					if (stri.equals(strinn + "()")) {
-						if (!found1) {
-							boolean b = false;
-							for (int i1 = p.methods.get(strinn); i1 < p.lines.size(); i1++) {
-								String line = p.lines.get(i1);
-								if (line.startsWith("}")) {
-									i1 = p.lines.size() + 1;
-									continue;
-								}
-								if (!b) {
-									decodeLine(line, p, topDir, i1);
-									if (!p.returnValue.equals("")) {
-										String returnValue = p.returnValue;
-										stri = returnValue;
-										p.returnValue = "";
-										b = true;
-										found1 = true;
-										found = false;
-									}
-								}
-							}
-						}
-					}
-				}
-				if (!found1) {
-					for (String strin : p.variables.keySet()) {
-						if (strin.equals(stri)) {
-							stri = p.variables.get(strin);
-						}
-					}
-				}
-				string += stri;
-			}
-			string = string.replaceAll("\"", "");
+			String string = parseString(data, p);
 			p.variables.put(varName, string);
 			p.types.put(varName, "STRING");
 		} else if (s.startsWith("boolean") && !s.startsWith("boolean()")) {
@@ -904,13 +751,13 @@ public class FinlayScript {
 			s = s.trim();
 			boolean b = true;
 			if(s.startsWith("\"")){
-				s = s.replaceAll("\"", "");
+				s = s.substring(1,s.length()-1);
 				b = true;
 			}
 			for(String method : p.env.methods.keySet()){
 				if(s.startsWith(method+"(")){
 					String[] args = s.substring(s.indexOf("("), s.lastIndexOf(")")).split(",");
-					if(p.env.methods.get(method).onMethod(method, s, p,args)){
+					if(p.env.methods.get(method).onMethod(method, s, p,args) && b){
 						s = p.returnValue;
 						b = false;
 					}
@@ -950,6 +797,7 @@ public class FinlayScript {
 					}
 				}
 			}
+			
 			string1 += s;
 		}
 		return string1;

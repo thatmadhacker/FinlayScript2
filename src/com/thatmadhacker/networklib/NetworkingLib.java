@@ -10,7 +10,7 @@ import java.util.Scanner;
 import com.thatmadhacker.finlayscript.Library;
 import com.thatmadhacker.finlayscript.Program;
 
-public class NetworkingLib implements Library {
+public class NetworkingLib extends Library {
 
 	Map<String,Socket> sockets = new HashMap<String,Socket>();
 	Map<String,PrintWriter> outs = new HashMap<String,PrintWriter>();
@@ -57,6 +57,11 @@ public class NetworkingLib implements Library {
 		p.env.methods.put("sPrint", this);
 		p.env.methods.put("sPrintln", this);
 		p.env.methods.put("sRead", this);
+	}
+
+	@Override
+	public String getName() {
+		return "networkinglib";
 	}
 
 }

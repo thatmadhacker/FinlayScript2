@@ -36,7 +36,7 @@ void() test{
 	write("test.txt","t",true)
 	String key = genKey("AES",128)
 	delete("key.txt")
-	create("key.txt)
+	create("key.txt")
 	write("key.txt",key,true)
 	String crypt = encrypt("AES",key,"hello")
 	write("test.txt",crypt,true)

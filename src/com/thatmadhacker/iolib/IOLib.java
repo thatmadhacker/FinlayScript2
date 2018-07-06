@@ -86,7 +86,10 @@ public class IOLib extends Library {
 						lines.add(in.nextLine());
 					}
 					in.close();
+					p.lists.remove("read");
+					p.listTypes.remove("read");
 					p.lists.put("read", lines);
+					p.listTypes.put("read", "String");
 					p.returnValue = combine(lines, "");
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();

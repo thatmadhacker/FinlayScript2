@@ -1,4 +1,4 @@
-package com.thatmadhacker.iolib;
+package com.thatmadhacker.libs.iolib;
 
 import java.io.File;
 import java.io.FileNotFoundException;

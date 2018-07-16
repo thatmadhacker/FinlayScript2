@@ -1,4 +1,4 @@
-package com.thatmadhacker.cryptolib;
+package com.thatmadhacker.libs.cryptolib;
 
 import javax.crypto.SecretKey;
 

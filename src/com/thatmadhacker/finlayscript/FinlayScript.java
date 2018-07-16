@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import com.thatmadhacker.cryptolib.CryptoLib;
-import com.thatmadhacker.iolib.IOLib;
-import com.thatmadhacker.networklib.NetworkingLib;
+import com.thatmadhacker.libs.cryptolib.CryptoLib;
+import com.thatmadhacker.libs.iolib.IOLib;
+import com.thatmadhacker.libs.networklib.NetworkingLib;
 
 public class FinlayScript {
 	public static void interpretASync(Program p, File f, File topDir) {

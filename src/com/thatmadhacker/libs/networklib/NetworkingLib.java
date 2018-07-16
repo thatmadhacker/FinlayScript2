@@ -1,4 +1,4 @@
-package com.thatmadhacker.networklib;
+package com.thatmadhacker.libs.networklib;
 
 import java.io.IOException;
 import java.io.PrintWriter;

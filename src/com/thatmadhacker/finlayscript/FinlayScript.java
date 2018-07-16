@@ -7,6 +7,7 @@ import java.util.Scanner;
 
 import com.thatmadhacker.libs.cryptolib.CryptoLib;
 import com.thatmadhacker.libs.iolib.IOLib;
+import com.thatmadhacker.libs.math.MathLib;
 import com.thatmadhacker.libs.networklib.NetworkingLib;
 
 public class FinlayScript {
@@ -582,6 +583,7 @@ public class FinlayScript {
 		p.libraries.add(new IOLib());
 		p.libraries.add(new CryptoLib());
 		p.libraries.add(new NetworkingLib());
+		p.libraries.add(new MathLib());
 		interpret(p, new File("scripts/test.fscript"), new File("scripts/"));
 		p.exec();
 		System.out.println("Exit code: " + p.exitCode);
